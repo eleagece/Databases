@@ -1,0 +1,135 @@
+-- Adrián Díaz Jiménez // Luis Alfonso González de la Calzada
+
+/abolish
+
+-- Para procesar este archivo (se puede especificar también la ruta): /process datos.ra
+-- Por defecto ejecuta desde el directorio de arranque, pero puedes hacer /cd Directorio
+-- para cambiar al que quieras, o indicar la ruta en el propio argumento de /process, 
+-- tanto de forma relativa como absoluta. 
+-- Funciona tanto la barra invertida como la de división para separar las carpetas.
+-- Otro comando útil es /pwd que te dice el directorio actual.
+-- Antes debéis crear las relaciones (tablas).
+-- Falta la última tupla de cada tabla y debéis escribir vosotros la instrucción de inserción en cada caso
+
+create table programadores(dni string primary key, nombre string, dirección string, teléfono string);
+create table analistas (dni string primary key, nombre string, dirección string, teléfono string);
+create table distribución (códigopr string primary key, dniemp string primary key, horas int,primary key(códigopr, dniemp));
+create table proyectos(código string primary key, descripción string, dnidir string);
+
+
+insert into programadores(dni, nombre, dirección, teléfono) values('1','Jacinto','Jazmín 4','91-8888888');
+insert into programadores(dni, nombre, dirección, teléfono) values('2','Herminia','Rosa 4','91-7777777');
+insert into programadores(dni, nombre, dirección, teléfono) values('3','Calixto','Clavel 3','91-1231231');
+insert into programadores(dni, nombre, dirección, teléfono) values('4','Teodora','Petunia 3','91-6666666');
+
+
+insert into analistas(dni, nombre, dirección, teléfono) values('4','Teodora','Petunia 3','91-6666666');
+insert into analistas(dni, nombre, dirección, teléfono) values('5','Evaristo','Luna 1','91-1111111');
+insert into analistas(dni, nombre, dirección, teléfono) values('6','Luciana','Júpiter 2','91-8888888');
+insert into analistas(dni, nombre, dirección, teléfono) values('7','Nicodemo','Plutón',null);
+
+-- Para crear una clave primaria de más de un atributo hay que añadir al final como si fuese otro campo lo siguiente: primary key (códigopr, dniemp)
+insert into distribución(códigopr, dniemp, horas) values('P1','1',10);
+insert into distribución(códigopr, dniemp, horas) values('P1','2',40);
+insert into distribución(códigopr, dniemp, horas) values('P1','4',5);
+insert into distribución(códigopr, dniemp, horas) values('P2','4',10);
+insert into distribución(códigopr, dniemp, horas) values('P3','1',10);
+insert into distribución(códigopr, dniemp, horas) values('P3','3',40);
+insert into distribución(códigopr, dniemp, horas) values('P3','4',5);
+insert into distribución(códigopr, dniemp, horas) values('P3','5',30);
+insert into distribución(códigopr, dniemp, horas) values('P4','4',20);
+insert into distribución(códigopr, dniemp, horas) values('P4','5',10);
+
+insert into proyectos(código, descripción, dnidir) values('P1','Nómina','4');
+insert into proyectos(código, descripción, dnidir) values('P2','Contabilidad','4');
+insert into proyectos(código, descripción, dnidir) values('P3','Producción','5');
+insert into proyectos(código, descripción, dnidir) values('P4','Clientes','5');
+insert into proyectos(código, descripción, dnidir) values('P5','Ventas','6');
+
+-------------------------------------------------------------------------
+-- 1. DNI DE LOS EMPLEADOS QUE SON PROGRAMADORES Y ANALISTAS CON NJOIN --
+-------------------------------------------------------------------------
+vista1:=(project dni(programadores njoin analistas));
+
+--------------------------------------------------
+-- 2. NÚMERO DE HORAS QUE TRABAJA CADA EMPLEADO --
+--------------------------------------------------
+vista2:=(group_by dniemp dniemp, sum(horas) true (distribución));
+
+----------------------------------------------------------
+-- 3. DNI, NOMBRE Y CÓDIGO DE PROYECTO DE CADA EMPLEADO --
+----------------------------------------------------------
+vista3:=(project dni,nombre,códigopr(distribución rjoin dniemp=dni (programadores union analistas)));
+
+--------------------------------------------------------------
+-- 4. DNI Y NOMBRE DE EMPLEADOS SIN TELÉFONO USANDO IS NULL --
+--------------------------------------------------------------
+vista4:=project dni, nombre(select teléfono is null(programadores union analistas));
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 5. EMPLEADOS CUYO TOTAL DE HORAS ENTRE EL NÚMERO DE PROYECTOS EN QUE TRABAJA ES MENOR QUE LA MEDIA TOTAL DE HORAS POR PROYECTO ENTRE SU NÚMERO DE EMPLEADOS --
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Número de horas totales dedicadas por cada empleado en todos sus proyectos
+vista51:=rename vista51(dniemp,horastotales) (group_by dniemp dniemp, sum(horas) true (distribución));
+--Número de proyectos de cada empleado
+vista52:=rename vista52(dniemp,numproy) (group_by dniemp dniemp, count(códigopr) true (distribución));
+--Media total de horas por proyecto
+vista53:=rename vista53(códigopr,avghoras) (group_by códigopr códigopr, avg(horas) true (distribución));
+--Número de empleados por proyecto
+vista54:=rename vista54(códigopr,numemp) (group_by códigopr códigopr, count(dniemp) true (distribución));
+--Joins naturales de vista51-vista52 y vista53-vista54 y producto cartesiano de los join naturales
+vista55:=vista51 njoin vista52;
+vista56:=vista53 njoin vista54;
+vista57:=vista55 product vista56;
+--Vista final
+--¡¡¡¡¡¡¡¡¡¡¡Duda!!!!!!!!!!! ¿qué numero se supone que hay que sacar además del dniemp?
+vista5:=project dniemp(select ((horastotales/numproy)<(avghoras/numemp)) (vista57));
+
+-----------------------------------------------------------------------------------------------------------------------
+-- 6. PARA CADA PROYECTO Y EMPLEADO: (NÚMERO DE HORAS + 20 POR CIENTO) DE LOS EMPLEADOS QUE NO TRABAJAN CON EVARISTO --
+-----------------------------------------------------------------------------------------------------------------------
+--El DNI de Evaristo
+vista61:=project dni(select nombre='Evaristo'(programadores union analistas));
+--Proyectos que dirige Evaristo
+vista62:=project código(select dnidir=dni(vista61 product proyectos));
+--Proyectos en los que Evaristo es empleado
+vista63:=project códigopr(select dniemp=dni(vista61 product distribución));
+--Proyectos en los que Evaristo es empleado y proyectos en los que Evaristo es director
+vista64:=vista62 union vista63;
+--Todos los proyectos con empleados
+vista65:=project códigopr(distribución);
+--Los proyectos con empleados que no tienen relación con Evaristo
+vista66:=vista65 difference vista64;
+--La tabla de distribución sin los proyectos en los que está Evaristo
+vista67:=project vista66.códigopr,dniemp,horas(select vista66.códigopr=distribución.códigopr(vista66 product distribución));
+--Vista final
+vista6:=project códigopr,dniemp,(horas+horas/100*20)(vista67);
+
+--------------------------------------------------------------------------------------------------------------------
+-- 7. USANDO DIVISIÓN: DETERMINAR DNI DE LOS EMPLEADOS QUE TRABAJAN EN AL MENOS LOS MISMOS PROYECTOS QUE EVARISTO --
+--------------------------------------------------------------------------------------------------------------------
+--El DNI de Evaristo
+vista71:=project dni(select nombre='Evaristo'(programadores union analistas));
+--Proyectos en los que Evaristo es empleado
+vista72:=project códigopr(select dniemp=dni(vista71 product distribución));
+--Vista final
+vista7:=(project códigopr,dniemp(distribución)) division (vista72);
+
+-----------------------------------------
+-- 8. IGUAL QUE EL 7 PERO SIN DIVISIÓN --
+-----------------------------------------
+--vista27:=(project descripción, nombre, horas (select códigopr/=código(proyectos product(select dni=dniemp(programadores product --distribución)))));
+--rename distr(códigopr,dniemp,hora) (distribución);	
+--vista30:=distribución product (project códigopr(select dniemp=dni(distribución product (project dni(select nombre='Evaristo'(programadores union analistas))))));
+
+------------------------------------------------------
+-- 9. DNI DE LOS EMPLEADOS QUE DEPENDEN DE EVARISTO --
+------------------------------------------------------
+--Dnis empleados que trabajan en los mismos proyectos que dirige Evaristo
+--vista291:=(project dniemp(select códigopr=código AND dniemp<>dni(distribución product (select dnidir=dni(proyectos product(project dni(select nombre='Evaristo'(programadores union analistas))))))));
+--Información sobre los empleados que dirige Evaristo y a la vez dirigen un proyecto
+--vista292:=select dnidir=dniemp(proyectos product vista291);
+--Dnis de los empleados que trabajan en los proyectos de Evaristo y en los proyectos de los jefes que a la vez trabajan con Evaristo.
+--vista29:=project distribución.dniemp(select dnidir<>distribución.dniemp AND códigopr=código(distribución product vista292)) union vista291;
+
+--select true(vista21);

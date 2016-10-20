@@ -1,0 +1,4 @@
+12345678A;Avda. Complutense;28040;
+12345678A;Cántaro;28004;
+12345678P;Diamante;14200;
+12345678P;Carbón;14901;

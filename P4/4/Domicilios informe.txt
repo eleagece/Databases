@@ -1,0 +1,49 @@
+
+SQL*Loader: Release 11.2.0.2.0 - Production on Jue Dic 3 18:46:37 2015
+
+Copyright (c) 1982, 2009, Oracle and/or its affiliates.  All rights reserved.
+
+Control File:   Domicilios.ctl
+Data File:      Domicilios.txt
+  Bad File:     Domicilios.bad
+  Discard File:  none specified
+ 
+ (Allow all discards)
+
+Number to load: ALL
+Number to skip: 0
+Errors allowed: 50
+Bind array:     64 rows, maximum of 256000 bytes
+Continuation:    none specified
+Path used:      Conventional
+
+Table DOMICILIOS, loaded from every logical record.
+Insert option in effect for this table: APPEND
+
+   Column Name                  Position   Len  Term Encl Datatype
+------------------------------ ---------- ----- ---- ---- ---------------------
+DNI                                 FIRST     *   ;       CHARACTER            
+CALLE                                NEXT     *   ;       CHARACTER            
+"Código postal"                      NEXT     *   ;       CHARACTER            
+
+
+Table DOMICILIOS:
+  5 Rows successfully loaded.
+  0 Rows not loaded due to data errors.
+  0 Rows not loaded because all WHEN clauses were failed.
+  0 Rows not loaded because all fields were null.
+
+
+Space allocated for bind array:                  49536 bytes(64 rows)
+Read   buffer bytes: 1048576
+
+Total logical records skipped:          0
+Total logical records read:             5
+Total logical records rejected:         0
+Total logical records discarded:        0
+
+Run began on Jue Dic 03 18:46:37 2015
+Run ended on Jue Dic 03 18:46:38 2015
+
+Elapsed time was:     00:00:00.17
+CPU time was:         00:00:00.05

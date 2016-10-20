@@ -1,0 +1,7 @@
+08050;Parets;Barcelona;
+14200;Peñarroya;Córdoba;
+14900;Lucena;Córdoba;
+;Arganda;Sevilla;
+08050;Zaragoza;Zaragoza;
+28040;Arganda;Madrid;
+28004;Madrid;Madrid;

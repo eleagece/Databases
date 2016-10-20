@@ -1,0 +1,8 @@
+Teléfonos error al insertar el dato porque no existe el DNI 12345789P, Parent Key not found
+
+Códigos postales, se repite el código postal de Madrid, unique constraint (NUEVOUSUARIO.SYS_C007068) violated.
+
+Domicilios 12345678L, Diamante, 15200 el código postal no existe. Error SQL: ORA-02291: integrity constraint (NUEVOUSUARIO.SYS_C007070) violated - parent key not found
+02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
